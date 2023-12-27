@@ -6,6 +6,7 @@ type Tuple struct {
 	X float64
 	Y float64
 	Z float64
+	W float64
 }
 
 func NewTuple(x, y, z float64) *Tuple {
@@ -14,6 +15,7 @@ func NewTuple(x, y, z float64) *Tuple {
 		X: x,
 		Y: y,
 		Z: z,
+		W: -1,
 	}
 
 }
@@ -25,6 +27,7 @@ func NewPoint(x, y, z float64) *Point {
 		X: x,
 		Y: y,
 		Z: z,
+		W: 1,
 	}
 }
 
@@ -33,6 +36,7 @@ func (p *Point) AddVector(n *Vector) *Point {
 		X: p.X + n.X,
 		Y: p.Y + n.Y,
 		Z: p.Z + n.Z,
+		W: p.W + n.W, // 1 + 0 = 1 i.e. point
 	}
 }
 
@@ -41,6 +45,7 @@ func (p *Point) SubVector(n *Vector) *Point {
 		X: p.X - n.X,
 		Y: p.Y - n.Y,
 		Z: p.Z - n.Z,
+		W: p.W - n.W, // 1 - 0 = 1 i.e. point
 	}
 }
 
@@ -49,6 +54,7 @@ func (p *Point) Sub(n *Point) *Vector {
 		X: p.X - n.X,
 		Y: p.Y - n.Y,
 		Z: p.Z - n.Z,
+		W: p.W - n.W, // 1 - 1 = 0 i.e. vector
 	}
 }
 
@@ -61,6 +67,7 @@ func NewVector(x, y, z float64) *Vector {
 		X: x,
 		Y: y,
 		Z: z,
+		W: 0,
 	}
 }
 
@@ -69,6 +76,7 @@ func (v *Vector) Add(n *Vector) *Vector {
 		X: v.X + n.X,
 		Y: v.Y + n.Y,
 		Z: v.Z + n.Z,
+		W: v.W + n.W, // 0 + 0 = 0 i.e. vector
 	}
 }
 
@@ -77,18 +85,20 @@ func (v *Vector) Sub(n *Vector) *Vector {
 		X: v.X - n.X,
 		Y: v.Y - n.Y,
 		Z: v.Z - n.Z,
+		W: v.W - n.W, // 0 - 0 = 0 i.e. vector
 	}
 }
 
-func (t *Vector) Negate() *Vector {
-	return ZeroVector.Sub(t)
+func (v *Vector) Negate() *Vector {
+	return ZeroVector.Sub(v)
 }
 
-func (t *Vector) MultiplyScalar(s float64) *Vector {
+func (v *Vector) MultiplyScalar(s float64) *Vector {
 	return &Vector{
-		X: t.X * s,
-		Y: t.Y * s,
-		Z: t.Z * s,
+		X: v.X * s,
+		Y: v.Y * s,
+		Z: v.Z * s,
+		W: v.W * s, // 0 * s = 0 i.e. vector
 	}
 }
 

@@ -59,6 +59,7 @@ func main() {
 			tickCount += 1
 			canvas.WritePixel(int(projectile.position.X), 550-int(projectile.position.Y), color)
 			canvas.WritePixel(int(projectile.position.X)+1, 550-int(projectile.position.Y)+1, color)
+			canvas.WritePixel(int(projectile.position.X)+2, 550-int(projectile.position.Y)+2, color)
 		}
 
 	}
