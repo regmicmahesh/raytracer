@@ -107,9 +107,7 @@ func (t *Vector) Divide(s float64) *Vector {
 }
 
 func (t *Vector) Magnitude() float64 {
-	return math.Sqrt(
-		t.X*t.X + t.Y*t.Y + t.Z*t.Z,
-	)
+	return math.Sqrt(t.Dot(t))
 }
 
 func (t *Vector) Normalize() *Vector {

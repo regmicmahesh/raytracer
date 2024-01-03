@@ -1,28 +1,38 @@
 package raytracer
 
+import (
+	"math"
+)
+
 type Matrix4 struct {
 	data [4][4]float64
 }
 
-var IdentityMatrix4 = &Matrix4{
-	data: [4][4]float64{
-		{1, 0, 0, 0},
-		{0, 1, 0, 0},
-		{0, 0, 1, 0},
-		{0, 0, 0, 1},
-	},
+func NewIdentityMatrix4() *Matrix4 {
+	return &Matrix4{
+		data: [4][4]float64{
+			{1, 0, 0, 0},
+			{0, 1, 0, 0},
+			{0, 0, 1, 0},
+			{0, 0, 0, 1},
+		},
+	}
 }
 
 func NewMatrix4() *Matrix4 {
 	return &Matrix4{}
 }
 
-func (m *Matrix4) Set(col, row int64, val float64) {
-	m.data[col][row] = val
+func (m *Matrix4) Initialize(data [4][4]float64) {
+	m.data = data
 }
 
-func (m *Matrix4) Get(col, row int64) float64 {
-	return m.data[col][row]
+func (m *Matrix4) Set(row, col int64, val float64) {
+	m.data[row][col] = val
+}
+
+func (m *Matrix4) Get(row, col int64) float64 {
+	return m.data[row][col]
 }
 
 func (m *Matrix4) Equals(n *Matrix4) bool {
@@ -52,11 +62,9 @@ func (m *Matrix4) Multiply(n *Matrix4) *Matrix4 {
 
 			total := float64(0)
 			for k := 0; k < 4; k++ {
-				total += m.data[row][k] + n.data[k][col]
+				total = total + m.data[row][k]*n.data[k][col]
 			}
-
 			res.data[row][col] = total
-
 		}
 
 	}
@@ -135,16 +143,7 @@ func (m *Matrix4) Determinant() float64 {
 
 }
 
-/*
-
-1 2 3 4     1 = 1*1+2*2+3*3+4*4
-5 6 7 8		2  = 5*1+6*2+7*3+4*8
-2 3 4 5		3
-4 5 6 7		4
-
-*/
-
-func (m *Matrix4) MultiplyPoint(p *Point) *Point {
+func (m *Matrix4) ApplyPoint(p *Point) *Point {
 
 	newPoint := &Point{}
 
@@ -157,7 +156,7 @@ func (m *Matrix4) MultiplyPoint(p *Point) *Point {
 
 }
 
-func (m *Matrix4) MultiplyVector(v *Vector) *Vector {
+func (m *Matrix4) ApplyVector(v *Vector) *Vector {
 	newVector := &Vector{}
 
 	newVector.X = m.data[0][0]*v.X + m.data[0][1]*v.Y + m.data[0][2]*v.Z + m.data[0][3]*v.W
@@ -169,27 +168,111 @@ func (m *Matrix4) MultiplyVector(v *Vector) *Vector {
 
 }
 
-func (m *Matrix4) AddTranslation(x, y, z float64) *Matrix4 {
+func NewTranslationMatrix4(x, y, z float64) *Matrix4 {
 
-	newM := *m
+	idm := NewIdentityMatrix4()
 
-	newM.data[0][3] = x
-	newM.data[1][3] = y
-	newM.data[2][3] = z
+	idm.data[0][3] = x
+	idm.data[1][3] = y
+	idm.data[2][3] = z
 
-	return &newM
+	return idm
 
 }
 
-func (m *Matrix4) AddScaling(x, y, z float64) *Matrix4 {
+func NewScalingMatrix4(x, y, z float64) *Matrix4 {
 
-	newM := *m
+	idm := NewIdentityMatrix4()
 
-	newM.data[0][0] = x
-	newM.data[1][1] = y
-	newM.data[2][2] = z
+	idm.data[0][0] = x
+	idm.data[1][1] = y
+	idm.data[2][2] = z
 
-	return &newM
+	return idm
+
+}
+
+func NewRotationXMatrix(r float64) *Matrix4 {
+	idm := NewIdentityMatrix4()
+	idm.data[1][1] = math.Cos(r)
+	idm.data[1][2] = -math.Sin(r)
+	idm.data[2][1] = math.Sin(r)
+	idm.data[2][2] = math.Cos(r)
+	return idm
+}
+
+func NewRotationYMatrix(r float64) *Matrix4 {
+	idm := NewIdentityMatrix4()
+	idm.data[0][0] = math.Cos(r)
+	idm.data[0][2] = math.Sin(r)
+	idm.data[2][0] = -math.Sin(r)
+	idm.data[2][2] = math.Cos(r)
+	return idm
+}
+
+func NewRotationZMatrix(r float64) *Matrix4 {
+	idm := NewIdentityMatrix4()
+	idm.data[0][0] = math.Cos(r)
+	idm.data[0][1] = -math.Sin(r)
+	idm.data[1][0] = math.Sin(r)
+	idm.data[1][1] = math.Cos(r)
+	return idm
+}
+
+func NewShearingMatrix(xY, xZ, yX, yZ, zX, zY float64) *Matrix4 {
+
+	idm := NewIdentityMatrix4()
+
+	idm.data[0][1] = xY
+	idm.data[0][2] = xZ
+	idm.data[1][0] = yX
+	idm.data[1][2] = yZ
+	idm.data[2][0] = zX
+	idm.data[2][1] = zY
+
+	return idm
+
+}
+
+func (m *Matrix4) Translate(x, y, z float64) *Matrix4 {
+
+	tm := NewTranslationMatrix4(x, y, z)
+	return tm.Multiply(m)
+
+}
+
+func (m *Matrix4) Scale(x, y, z float64) *Matrix4 {
+
+	sm := NewScalingMatrix4(x, y, z)
+	return sm.Multiply(m)
+
+}
+
+func (m *Matrix4) RotateX(r float64) *Matrix4 {
+
+	rm := NewRotationXMatrix(r)
+	return rm.Multiply(m)
+
+}
+
+func (m *Matrix4) RotateY(r float64) *Matrix4 {
+
+	rm := NewRotationYMatrix(r)
+	return rm.Multiply(m)
+
+}
+
+func (m *Matrix4) RotateZ(r float64) *Matrix4 {
+
+	rm := NewRotationZMatrix(r)
+	return rm.Multiply(m)
+
+}
+
+func (m *Matrix4) Shear(xY, xZ, yX, yZ, zX, zY float64) *Matrix4 {
+
+	sm := NewShearingMatrix(xY, xZ, yX, yZ, zX, zY)
+	return sm.Multiply(m)
 
 }
 
